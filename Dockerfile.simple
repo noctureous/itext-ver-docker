@@ -1,5 +1,5 @@
 # Simple test Dockerfile for PDF Analyzer
-FROM maven:3.9.6-openjdk-17-slim AS builder
+FROM maven:3.9-openjdk-17-slim AS builder
 WORKDIR /app
 
 # Copy POM file first for better layer caching

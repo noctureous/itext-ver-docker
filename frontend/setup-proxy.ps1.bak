@@ -1,4 +1,0 @@
-$env:NPM_CONFIG_STRICT_SSL = $false
-$env:NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
-
-npm config set strict-ssl false

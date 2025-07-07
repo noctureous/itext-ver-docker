@@ -6,10 +6,10 @@ Write-Host "========================" -ForegroundColor Green
 Write-Host "`nChecking Docker..." -ForegroundColor Yellow
 try {
     docker --version
-    Write-Host "✓ Docker is installed" -ForegroundColor Green
+    Write-Host "[OK] Docker is installed" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ Docker not found" -ForegroundColor Red
+    Write-Host "[ERROR] Docker not found" -ForegroundColor Red
     exit 1
 }
 
@@ -17,10 +17,10 @@ catch {
 Write-Host "`nTesting Docker daemon..." -ForegroundColor Yellow
 try {
     docker ps | Out-Null
-    Write-Host "✓ Docker daemon is running" -ForegroundColor Green
+    Write-Host "[OK] Docker daemon is running" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ Docker daemon not running. Please start Docker Desktop first." -ForegroundColor Red
+    Write-Host "[ERROR] Docker daemon not running. Please start Docker Desktop first." -ForegroundColor Red
     Write-Host "After starting Docker Desktop, run this command:" -ForegroundColor Yellow
     Write-Host "docker build -f Dockerfile.simple -t pdf-analyzer-test ." -ForegroundColor White
     exit 1
@@ -31,10 +31,10 @@ Write-Host "`nBuilding simple test image..." -ForegroundColor Cyan
 docker build -f Dockerfile.simple -t pdf-analyzer-test .
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✓ Build successful!" -ForegroundColor Green
+    Write-Host "[OK] Build successful!" -ForegroundColor Green
     Write-Host "Running test container..." -ForegroundColor Yellow
     docker run --rm pdf-analyzer-test
 }
 else {
-    Write-Host "✗ Build failed" -ForegroundColor Red
+    Write-Host "[ERROR] Build failed" -ForegroundColor Red
 }

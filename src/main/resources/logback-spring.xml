@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- This logback configuration is disabled when running on WildFly -->
+    <!-- WildFly will use its own JBoss logging system -->
+    
+    <!-- Dummy configuration to prevent Spring Boot from initializing logback -->
+    <root level="OFF">
+        <!-- No appenders - effectively disables logback -->
+    </root>
+</configuration>

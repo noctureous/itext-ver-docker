@@ -9,7 +9,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build backend
-FROM maven:3.9.6-openjdk-17-slim AS backend-builder
+FROM maven:3.9.6-eclipse-temurin-17 AS backend-builder
 WORKDIR /app
 
 # Copy POM file first for better layer caching
@@ -33,24 +33,22 @@ ENV WILDFLY_HOME=/opt/jboss/wildfly
 ENV JBOSS_HOME=/opt/jboss/wildfly
 ENV DEPLOYMENT_DIR=${WILDFLY_HOME}/standalone/deployments
 
+# Set logging manager early to prevent conflicts
+ENV JAVA_OPTS="-Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:+EnableDynamicAgentLoading"
+
 # Create application user
 USER root
 
-# Install required packages for OCR and fonts
-RUN microdnf update -y && \
-    microdnf install -y \
-        tesseract \
-        tesseract-langpack-eng \
-        tesseract-langpack-chi-sim \
-        tesseract-langpack-chi-tra \
-        fontconfig \
-        dejavu-fonts-common \
-        dejavu-sans-fonts \
-        dejavu-serif-fonts \
-        dejavu-sans-mono-fonts \
-        curl \
-        mysql && \
-    microdnf clean all
+# Try to install tesseract using microdnf (if available)
+RUN microdnf install -y tesseract fontconfig curl || \
+    echo "microdnf not available, continuing without package installation"
+
+# Set tessdata environment variable to our custom location
+ENV TESSDATA_PREFIX=/opt/tessdata
+
+# Create tessdata directory and copy all local tessdata files
+RUN mkdir -p $TESSDATA_PREFIX
+COPY tessdata/ $TESSDATA_PREFIX/
 
 # Create directories for uploads and logs
 RUN mkdir -p /opt/pdf-analyzer/uploads \
