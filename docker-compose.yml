@@ -1,0 +1,88 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: pdf-analyzer-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: cergprod
+      MYSQL_USER: cergprod
+      MYSQL_PASSWORD: cergprod
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - pdf-analyzer-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # PDF Analyzer Application on WildFly
+  pdf-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdf-analyzer-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx2048m -XX:+UseG1GC -XX:+UseStringDeduplication
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=cergprod
+      - DB_USER=cergprod
+      - DB_PASSWORD=cergprod
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    volumes:
+      - uploads_data:/opt/pdf-analyzer/uploads
+      - logs_data:/opt/pdf-analyzer/logs
+      - temp_data:/opt/pdf-analyzer/temp
+    networks:
+      - pdf-analyzer-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/pdf-analyzer/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: pdf-analyzer-nginx
+    depends_on:
+      - pdf-analyzer
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - pdf-analyzer-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+  logs_data:
+    driver: local
+  temp_data:
+    driver: local
+
+networks:
+  pdf-analyzer-network:
+    driver: bridge

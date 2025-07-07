@@ -1,0 +1,28 @@
+# Simple test Dockerfile for PDF Analyzer
+FROM maven:3.9.6-openjdk-17-slim AS builder
+WORKDIR /app
+
+# Copy POM file first for better layer caching
+COPY pom.xml .
+
+# Download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src/ ./src/
+
+# Build the WAR file
+RUN mvn clean package -DskipTests
+
+# Simple runtime test
+FROM openjdk:17-jdk-slim
+
+# Copy the built WAR file
+COPY --from=builder /app/target/pdf-analyzer.war /app/pdf-analyzer.war
+
+# Simple health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD echo "Container is healthy"
+
+# Start command
+CMD ["java", "-jar", "/app/pdf-analyzer.war"]

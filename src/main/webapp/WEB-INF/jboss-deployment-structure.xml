@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>
+    <deployment>
+        <exclusions>
+            <!-- Exclude server provided modules -->
+            <module name="org.apache.commons.logging"/>
+            <module name="org.slf4j"/>
+            <module name="org.slf4j.impl"/>
+            <module name="org.jboss.logging.jul-to-slf4j-stub"/>
+            <module name="ch.qos.logback"/>
+        </exclusions>
+    </deployment>
+</jboss-deployment-structure>

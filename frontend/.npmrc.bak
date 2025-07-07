@@ -1,0 +1,3 @@
+strict-ssl=false
+registry=https://registry.npmjs.org/
+noproxy=localhost,127.0.0.1
